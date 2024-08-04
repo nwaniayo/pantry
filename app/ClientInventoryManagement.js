@@ -6,7 +6,7 @@ import {
   TableHead, TableRow, TablePagination, ThemeProvider, 
   createTheme, CssBaseline, Snackbar, Alert, Dialog,
   DialogTitle, DialogContent, DialogActions, CircularProgress,
-  Tooltip, Fade
+  Tooltip, Fade, AppBar, Toolbar, Card, CardContent, Grid
 } from '@mui/material';
 import { 
   Search as SearchIcon,
@@ -15,7 +15,11 @@ import {
   Delete as DeleteIcon,
   RemoveCircleOutline as DecreaseIcon,
   AddCircleOutline as IncreaseIcon,
-  Inventory as InventoryIcon
+  Inventory as InventoryIcon,
+  Menu as MenuIcon,
+  Fastfood as FastfoodIcon,
+  LocalOffer as LocalOfferIcon,
+  TrendingUp as TrendingUpIcon
 } from '@mui/icons-material';
 import { collection, query, getDocs, doc, setDoc, updateDoc, deleteDoc } from "firebase/firestore";
 import { firestore } from "../firebase";
@@ -95,7 +99,7 @@ export default function ClientInventoryManagement() {
   const [loading, setLoading] = useState(true);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState(null);
-
+  const [drawerOpen, setDrawerOpen] = useState(false);
   useEffect(() => {
     updateInventory();
   }, []);
@@ -193,77 +197,113 @@ export default function ClientInventoryManagement() {
     setItemToDelete(item);
     setDeleteDialogOpen(true);
   };
+  const Logo = () => (
+    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+      <FastfoodIcon sx={{ fontSize: 40, color: 'primary.main' }} />
+      <Typography variant="h5" component="div" sx={{ flexGrow: 1, fontWeight: 'bold', color: 'primary.main' }}>
+        Pantry Tracker Pro
+      </Typography>
+    </Box>
+  );
 
+  const ComingSoonFeature = ({ icon, title, description }) => (
+    <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column', transition: 'transform 0.3s', '&:hover': { transform: 'scale(1.05)' } }}>
+      <CardContent>
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+          {icon}
+          <Typography variant="h6" component="div" sx={{ ml: 1 }}>
+            {title}
+          </Typography>
+        </Box>
+        <Typography variant="body2" color="text.secondary">
+          {description}
+        </Typography>
+      </CardContent>
+    </Card>
+  );
+ 
   return (
     <ThemeProvider theme={customTheme}>
       <CssBaseline />
-      <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', p: 3, bgcolor: 'background.default' }}>
-        <Typography variant="h4" gutterBottom sx={{ color: 'primary.main', mb: 4, display: 'flex', alignItems: 'center' }}>
-          <InventoryIcon sx={{ mr: 2, fontSize: 40 }} />
-          Pantry Tracker Pro
-        </Typography>
-        <Paper elevation={3} sx={{ p: 3, mb: 4, bgcolor: 'background.paper', borderRadius: 2 }}>
-          <Typography variant="h6" gutterBottom sx={{ color: 'text.primary' }}>
-            Add New Item
-          </Typography>
-          <Box sx={{ display: 'flex', gap: 2 }}>
-            <TextField
-              label="Item Name"
-              value={itemName}
-              onChange={(e) => setItemName(e.target.value)}
-              fullWidth
-              variant="outlined"
-            />
-            <TextField
-              label="Quantity"
-              type="number"
-              value={itemQuantity}
-              onChange={(e) => setItemQuantity(parseInt(e.target.value) || 0)}
-              sx={{ width: 100 }}
-              variant="outlined"
-            />
-            <Button
-              variant="contained"
-              startIcon={<AddIcon />}
-              onClick={addItem}
-              disabled={!itemName.trim() || itemQuantity <= 0}
-              sx={{ px: 4 }}
+      <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+        <AppBar position="static" color="primary" elevation={0}>
+          <Toolbar>
+            <IconButton
+              size="large"
+              edge="start"
+              color="inherit"
+              aria-label="menu"
+              sx={{ mr: 2 }}
+              onClick={() => setDrawerOpen(!drawerOpen)}
             >
-              Add Item
-            </Button>
-          </Box>
-        </Paper>
-        <Paper elevation={3} sx={{ bgcolor: 'background.paper', borderRadius: 2 }}>
-          <Box sx={{ p: 2 }}>
-            <TextField
-              fullWidth
-              variant="outlined"
-              placeholder="Search inventory..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              InputProps={{
-                startAdornment: (
-                  <SearchIcon sx={{ color: 'action.active', mr: 1, my: 0.5 }} />
-                ),
-              }}
-            />
-          </Box>
-          {loading ? (
-            <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
-              <CircularProgress />
+              <MenuIcon />
+            </IconButton>
+            <Logo />
+          </Toolbar>
+        </AppBar>
+        <Box sx={{ flexGrow: 1, p: 3, bgcolor: 'background.default' }}>
+          <Paper elevation={3} sx={{ p: 3, mb: 4, bgcolor: 'background.paper', borderRadius: 2 }}>
+            <Typography variant="h6" gutterBottom sx={{ color: 'text.primary' }}>
+              Add New Item
+            </Typography>
+            <Box sx={{ display: 'flex', gap: 2 }}>
+              <TextField
+                label="Item Name"
+                value={itemName}
+                onChange={(e) => setItemName(e.target.value)}
+                fullWidth
+                variant="outlined"
+              />
+              <TextField
+                label="Quantity"
+                type="number"
+                value={itemQuantity}
+                onChange={(e) => setItemQuantity(parseInt(e.target.value) || 0)}
+                sx={{ width: 100 }}
+                variant="outlined"
+              />
+              <Button
+                variant="contained"
+                startIcon={<AddIcon />}
+                onClick={addItem}
+                disabled={!itemName.trim() || itemQuantity <= 0}
+                sx={{ px: 4 }}
+              >
+                Add Item
+              </Button>
             </Box>
-          ) : (
-            <>
-              <TableContainer>
-                <Table>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell sx={{ color: 'primary.main', fontWeight: 'bold' }}>Item Name</TableCell>
-                      <TableCell align="right" sx={{ color: 'primary.main', fontWeight: 'bold' }}>Quantity</TableCell>
-                      <TableCell align="right" sx={{ color: 'primary.main', fontWeight: 'bold' }}>Actions</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
+          </Paper>
+          <Paper elevation={3} sx={{ bgcolor: 'background.paper', borderRadius: 2, mb: 4 }}>
+            <Box sx={{ p: 2 }}>
+              <TextField
+                fullWidth
+                variant="outlined"
+                placeholder="Search inventory..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                InputProps={{
+                  startAdornment: (
+                    <SearchIcon sx={{ color: 'action.active', mr: 1, my: 0.5 }} />
+                  ),
+                }}
+              />
+            </Box>
+            {loading ? (
+              <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
+                <CircularProgress />
+              </Box>
+            ) : (
+              <>
+                <TableContainer>
+                  <Table>
+                    <TableHead>
+                      <TableRow>
+                        <TableCell sx={{ color: 'primary.main', fontWeight: 'bold' }}>Item Name</TableCell>
+                        <TableCell align="right" sx={{ color: 'primary.main', fontWeight: 'bold' }}>Quantity</TableCell>
+                        <TableCell align="right" sx={{ color: 'primary.main', fontWeight: 'bold' }}>Actions</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
                     {filteredInventory
                       .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                       .map((item) => (
@@ -292,21 +332,48 @@ export default function ClientInventoryManagement() {
                         </TableRow>
                       ))}
                   </TableBody>
-                </Table>
-              </TableContainer>
-              <TablePagination
-                rowsPerPageOptions={[5, 10, 25]}
-                component="div"
-                count={filteredInventory.length}
-                rowsPerPage={rowsPerPage}
-                page={page}
-                onPageChange={handleChangePage}
-                onRowsPerPageChange={handleChangeRowsPerPage}
-                sx={{ color: 'text.primary' }}
+                  </Table>
+                </TableContainer>
+                <TablePagination
+                  rowsPerPageOptions={[5, 10, 25]}
+                  component="div"
+                  count={filteredInventory.length}
+                  rowsPerPage={rowsPerPage}
+                  page={page}
+                  onPageChange={handleChangePage}
+                  onRowsPerPageChange={handleChangeRowsPerPage}
+                  sx={{ color: 'text.primary' }}
+                />
+              </>
+            )}
+          </Paper>
+          <Typography variant="h5" gutterBottom sx={{ color: 'primary.main', mt: 6, mb: 3 }}>
+            Coming Soon: AI-Powered Features
+          </Typography>
+          <Grid container spacing={3}>
+            <Grid item xs={12} sm={6} md={4}>
+              <ComingSoonFeature
+                icon={<LocalOfferIcon sx={{ fontSize: 40, color: 'secondary.main' }} />}
+                title="Smart Shopping Lists"
+                description="AI-generated shopping lists based on your inventory and consumption patterns."
               />
-            </>
-          )}
-        </Paper>
+            </Grid>
+            <Grid item xs={12} sm={6} md={4}>
+              <ComingSoonFeature
+                icon={<TrendingUpIcon sx={{ fontSize: 40, color: 'secondary.main' }} />}
+                title="Consumption Insights"
+                description="Get detailed insights into your pantry usage and optimize your grocery shopping."
+              />
+            </Grid>
+            <Grid item xs={12} sm={6} md={4}>
+              <ComingSoonFeature
+                icon={<FastfoodIcon sx={{ fontSize: 40, color: 'secondary.main' }} />}
+                title="Recipe Suggestions"
+                description="Receive personalized recipe suggestions based on your current inventory."
+              />
+            </Grid>
+          </Grid>
+        </Box>
       </Box>
       <Snackbar open={snackbar.open} autoHideDuration={6000} onClose={handleCloseSnackbar}>
         <Alert onClose={handleCloseSnackbar} severity={snackbar.severity} sx={{ width: '100%' }}>
